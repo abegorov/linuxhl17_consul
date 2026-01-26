@@ -1,0 +1,24 @@
+---
+- name: Get timezones names
+  community.mysql.mysql_query:
+    login_unix_socket: '{{ mariadb_timezones_socket }}'
+    login_user: '{{ mariadb_timezones_login }}'
+    login_password: '{{ mariadb_timezones_password }}'
+    query: SELECT * FROM mysql.time_zone_name;
+  register: mariadb_timezones_names
+
+- name: Initialize MariaDB timezones
+  ansible.builtin.shell: >
+    set -o pipefail;
+    mariadb-tzinfo-to-sql /usr/share/zoneinfo
+    |
+    mariadb
+    --socket='{{ mariadb_timezones_socket }}'
+    --user='{{ mariadb_timezones_login }}'
+    --password='{{ mariadb_timezones_password }}'
+    mysql
+  args:
+    executable: /bin/bash
+  changed_when: true
+  when: not mariadb_timezones_names.query_result[0]
+...

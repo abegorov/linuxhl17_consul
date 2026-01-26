@@ -1,0 +1,7 @@
+---
+glpi_db_host: '{{ hostvars[groups["db"] | first].ip_address }}'
+glpi_db_user: glpi
+glpi_db_password: '{{ lookup("ansible.builtin.password",
+  "secrets/mariadb_glpi_password.txt", length=26) }}'
+glpi_db_name: glpi
+...

@@ -1,0 +1,33 @@
+---
+- name: Remove all anonymous user accounts
+  community.mysql.mysql_user:
+    login_unix_socket: '{{ mariadb_users_socket }}'
+    login_user: '{{ mariadb_users_login }}'
+    login_password: '{{ mariadb_users_password }}'
+    name: ''
+    host_all: true
+    column_case_sensitive: true
+    state: absent
+  when: mariadb_users_remove_anonymous
+
+- name: Update mariadb users
+  vars:
+    user: '{{ mariadb_users_default | combine(item) }}'
+  community.mysql.mysql_user:
+    login_unix_socket: '{{ mariadb_users_socket }}'
+    login_user: '{{ mariadb_users_login }}'
+    login_password: '{{ mariadb_users_password }}'
+    name: '{{ user.name }}'
+    host: '{{ user.host | default(omit) }}'
+    password: '{{ user.password }}'
+    password_expire: '{{ user.password_expire | default(omit) }}'
+    password_expire_interval: '{{ user.password_expire_interval |
+      default(omit) }}'
+    priv: '{{ user.priv | default(omit) }}'
+    resource_limits: '{{ user.resource_limits | default(omit) }}'
+    tls_requires: '{{ user.tls_requires | default(omit) }}'
+    column_case_sensitive: '{{ user.column_case_sensitive | default(omit) }}'
+    state: present
+  loop: '{{ mariadb_users_list }}'
+  no_log: '{{ not debug }}'
+...

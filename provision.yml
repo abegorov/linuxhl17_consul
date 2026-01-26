@@ -1,0 +1,66 @@
+---
+- name: Common provision
+  tags: common
+  hosts: all
+  become: true
+  gather_facts: false
+  roles:
+    - tls_ca
+    - tls_certs
+    - wait_connection
+    - apt_sources
+    - bash_completion
+    - chrony
+    - hosts
+    - gen_keys
+    - system_groups
+    - system_users
+
+- name: Setup iSCSI target
+  tags: iscsi
+  hosts: iscsi
+  become: true
+  gather_facts: false
+  roles:
+    - disk_label
+    - target
+
+- name: DB provision
+  tags: db
+  hosts: db
+  become: true
+  gather_facts: false
+  roles:
+    - mariadb
+    - mariadb_timezones
+    - mariadb_databases
+    - mariadb_users
+
+- name: Web provision
+  tags: angie
+  hosts: [lb, backend]
+  become: true
+  gather_facts: false
+  roles:
+    - angie
+
+- name: Backend provision
+  tags: backend
+  hosts: backend
+  become: true
+  gather_facts: false
+  roles:
+    - linux_modules
+    - iscsi
+    - mpath
+    - corosync
+    - dlm
+    - mdadm
+    - lvm
+    - gfs2
+    - filesystem
+    - directory
+    - pacemaker
+    - php_fpm
+    - glpi
+...

@@ -1,0 +1,31 @@
+---
+- name: Install targetcli
+  ansible.builtin.apt:
+    name: targetcli-fb
+    update_cache: true
+    cache_valid_time: 3600
+    state: present
+  retries: 10
+  delay: 10
+
+- name: Configure targetcli
+  ansible.builtin.template:
+    src: savedconfig.j2
+    dest: /etc/rtslib-fb-target/saveconfig.json
+    lstrip_blocks: true
+    owner: root
+    group: root
+    mode: '0600'
+  no_log: '{{ not debug }}'
+  notify: Restore LIO kernel target configuration
+
+- name: Enable and start rtslib-fb-targetctl service
+  ansible.builtin.systemd_service:
+    name: rtslib-fb-targetctl.service
+    enabled: true
+    state: started
+  ignore_errors: '{{ ansible_check_mode }}'
+
+- name: Force all notified handlers to run at this point
+  ansible.builtin.meta: flush_handlers
+...

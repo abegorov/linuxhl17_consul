@@ -1,0 +1,18 @@
+tls_copy_certs:
+  - ca_path: /etc/ssl/certs/copycert_ca.crt
+    cert_path: /etc/ssl/copycert.pem
+    key_path: /etc/ssl/copycert.pem
+    ca_content: '{{ lookup("ansible.builtin.file",
+      "secrets/certs/CA.crt") }}'
+    cert_content: '{{ lookup("ansible.builtin.file",
+      "secrets/certs/{{ inventory_hostname }}.crt") }}'
+    key_content: '{{ lookup("ansible.builtin.file",
+      "secrets/certs/{{ inventory_hostname }}.key") }}'
+
+tls_copy_cert_owner: root
+tls_copy_cert_group: root
+tls_copy_cert_mode: '0644'
+tls_copy_key_owner: root
+tls_copy_key_group: root
+tls_copy_key_mode: '0600'
+tls_copy_notify: []

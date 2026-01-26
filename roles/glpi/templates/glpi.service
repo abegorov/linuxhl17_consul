@@ -1,0 +1,9 @@
+[Unit]
+Description=GLPI automatic actions
+
+[Service]
+Type=oneshot
+User=glpi
+Group=glpi
+ExecStart=/usr/bin/php front/cron.php
+WorkingDirectory={{ glpi_dir }}

@@ -1,0 +1,148 @@
+---
+angie_signing_key: https://angie.software/keys/angie-signing.gpg
+angie_signing_key_checksum:
+  sha256:06ef4d35c4f3cf1dfa2dc37751bdd51a95a5fb64390ac11f60587e06183ebfe7
+angie_signing_key_path: /usr/share/keyrings/angie-signing.gpg
+angie_repo_mirror: https://download.angie.software/angie
+
+angie_autostart: true
+
+angie_modules: []
+angie_load_modules: []
+
+angie_passwd: {}
+angie_certs: []
+
+angie_access_logs:
+  - /var/log/angie/access.log  main
+angie_error_logs:
+  - /var/log/angie/error.log notice
+
+angie_ssl_ciphers:
+  - ECDHE-ECDSA-AES128-GCM-SHA256
+  - ECDHE-RSA-AES128-GCM-SHA256
+  - ECDHE-ECDSA-AES256-GCM-SHA384
+  - ECDHE-RSA-AES256-GCM-SHA384
+  - ECDHE-ECDSA-CHACHA20-POLY1305
+  - ECDHE-RSA-CHACHA20-POLY1305
+  - DHE-RSA-AES128-GCM-SHA256
+  - DHE-RSA-AES256-GCM-SHA384
+  - DHE-RSA-CHACHA20-POLY1305
+
+angie_set_real_ip_from: []
+
+angie_conf: |
+  user  angie;
+  worker_cpu_affinity  auto;
+  worker_processes  auto;
+  worker_rlimit_nofile  65536;
+
+  include /etc/angie/load_module.conf;
+
+  {% for error_log in angie_error_logs %}
+  error_log  {{ error_log }};
+  {% endfor %}
+  pid        /run/angie.pid;
+
+  events {
+    worker_connections  65536;
+  }
+
+  http {
+    include       /etc/angie/mime.types;
+    default_type  application/octet-stream;
+
+  log_format  main
+    '$remote_addr - $remote_user [$time_local] "$request" '
+    '$status $body_bytes_sent "$http_referer" '
+    '"$http_user_agent" "$http_x_forwarded_for"';
+
+  log_format  extended
+    '$remote_addr - $remote_user [$time_local] "$request" '
+    '$status $body_bytes_sent "$http_referer" rt="$request_time" '
+    '"$http_user_agent" "$http_x_forwarded_for" '
+    'h="$host" sn="$server_name" ru="$request_uri" u="$uri" '
+    'ucs="$upstream_cache_status" ua="$upstream_addr" us="$upstream_status" '
+    'uct="$upstream_connect_time" urt="$upstream_response_time"';
+
+  log_format  json_extended escape=json
+    '{'
+      '"remote_addr":"$remote_addr",'
+      '"remote_user":"$remote_user",'
+      '"time_local":"$time_local",'
+      '"request":"$request",'
+      '"status":$status,'
+      '"body_bytes_sent":$body_bytes_sent,'
+      '"http_referer":"$http_referer",'
+      '"request_time":$request_time,'
+      '"http_user_agent":"$http_user_agent",'
+      '"http_x_forwarded_for":"$http_x_forwarded_for",'
+      '"request_host":"$host",'
+      '"server_name":"$server_name",'
+      '"request_uri":"$request_uri",'
+      '"uri":"$uri",'
+      '"upstream_cache_status":"$upstream_cache_status",'
+      '"upstream_addr":"$upstream_addr",'
+      '"upstream_status":"$upstream_status",'
+      '"upstream_connect_time":"$upstream_connect_time",'
+      '"upstream_response_time":"$upstream_response_time"'
+    '}';
+
+  {% for access_log in angie_access_logs %}
+    access_log  {{ access_log }};
+  {% endfor %}
+
+    sendfile    on;
+    tcp_nopush  on;
+    tcp_nodelay on;
+
+    keepalive_timeout  65;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ecdh_curve X25519:prime256v1:secp384r1;
+    ssl_ciphers {{ angie_ssl_ciphers | join(':') }};
+    ssl_prefer_server_ciphers off;
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:MozSSL:10m;
+    ssl_dhparam "/etc/angie/dhparam";
+
+    gzip  on;
+    gzip_types  text/plain text/css text/xml application/javascript
+      application/json image/x-icon image/svg+xml;
+    gzip_comp_level  5;
+    gzip_proxied  any;
+    gzip_min_length  1000;
+    gzip_vary  on;
+
+    proxy_connect_timeout 100ms;
+    proxy_next_upstream error timeout http_500 http_502 http_503 http_504;
+
+    proxy_http_version 1.1;
+    proxy_redirect off;
+    proxy_set_header Connection "";
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Host $server_name;
+    proxy_set_header X-Real-IP $remote_addr;
+  {% for address in angie_set_real_ip_from %}
+    set_real_ip_from {{ address }};
+  {% endfor %}
+
+    include /etc/angie/http.d/*.conf;
+  }
+
+  #stream {
+  #    include /etc/angie/stream.d/*.conf;
+  #}
+
+angie_httpd_conf:
+  default: |
+    server {
+      listen 80 default_server;
+      listen [::]:80 default_server;
+
+      return 301 https://$host$request_uri;
+    }
+
+angie_streamd_conf: {}
+...

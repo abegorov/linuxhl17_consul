@@ -1,0 +1,14 @@
+---
+system_users_system: true
+system_users_password: 'x'
+system_users_uid: '{{ omit }}'
+system_users_append: false
+system_users_group: '{{ omit }}'
+system_users_groups: '{{ omit }}'
+system_users_comment: '{{ omit }}'
+system_users_home: '{{ omit }}'
+system_users_shell: /sbin/nologin
+system_users_create_home: true
+system_users_skeleton: /dev/null
+system_users_list: []
+...

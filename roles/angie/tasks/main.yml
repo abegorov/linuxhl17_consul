@@ -1,0 +1,45 @@
+---
+- name: Gather distribution facts
+  ansible.builtin.setup:
+    gather_subset:
+      - '!all'
+      - '!min'
+      - 'distribution'
+
+- name: Update angie repository
+  ansible.builtin.import_tasks: repo.yml
+
+- name: Install angie
+  ansible.builtin.import_tasks: install.yml
+
+- name: Update passwords
+  ansible.builtin.include_tasks: passwd.yml
+  loop: '{{ angie_passwd |
+    ansible.builtin.dict2items(key_name="name", value_name="records") }}'
+  loop_control:
+    loop_var: passwd
+  no_log: '{{ not debug }}'
+
+- name: Import certs tasks
+  ansible.builtin.import_role:
+    name: tls_copy
+    public: false
+  vars:
+    tls_copy_certs: '{{ angie_certs }}'
+    tls_copy_key_owner: angie
+    tls_copy_notify: Reload angie service
+
+- name: Configure angie
+  ansible.builtin.import_tasks: config.yml
+
+- name: Configure autostart for angie service
+  ansible.builtin.systemd_service:
+    name: angie.service
+    enabled: '{{ angie_autostart }}'
+    state: '{{ "started" if angie_autostart else omit }}'
+  register: angie_service
+  ignore_errors: '{{ ansible_check_mode }}'
+
+- name: Force all notified handlers to run
+  ansible.builtin.meta: flush_handlers
+...

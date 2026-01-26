@@ -1,0 +1,13 @@
+---
+- name: Reload php-fpm service
+  ansible.builtin.systemd_service:
+    name: php{{ php_fpm_version }}-fpm.service
+    state: reloaded
+  ignore_errors: '{{ ansible_check_mode }}'
+
+- name: Restart php-fpm service
+  ansible.builtin.systemd_service:
+    name: php{{ php_fpm_version }}-fpm.service
+    state: restarted
+  ignore_errors: '{{ ansible_check_mode }}'
+...

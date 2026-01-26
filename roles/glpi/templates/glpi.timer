@@ -1,0 +1,11 @@
+[Unit]
+Description=Run GLPI automatic actions every minute
+
+[Timer]
+OnCalendar=*-*-* *:*:00
+AccuracySec=1s
+RandomizedDelaySec=60
+FixedRandomDelay=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,12 @@
+---
+system_groups_list:
+  - name: '{{ glpi_group }}'
+    gid: '{{ glpi_gid }}'
+system_users_list:
+  - name: '{{ glpi_user }}'
+    password: 'x'
+    uid: '{{ glpi_uid }}'
+    group: '{{ glpi_group }}'
+    comment: GLPI IT Management Software
+    home: '{{ glpi_var_dir }}'
+...

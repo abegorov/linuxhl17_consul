@@ -1,0 +1,21 @@
+---
+- name: Create GLPI directories
+  ansible.builtin.import_tasks: dirs.yml
+
+- name: Unarchive GLPI
+  ansible.builtin.import_tasks: unarchive.yml
+
+- name: Configure GLPI
+  ansible.builtin.import_tasks: config.yml
+
+- name: Configure GLPI service
+  ansible.builtin.import_tasks: service.yml
+
+- name: Remove install.php
+  ansible.builtin.file:
+    path: '{{ glpi_dir }}/install/install.php'
+    state: absent
+
+- name: Force all notified handlers to run
+  ansible.builtin.meta: flush_handlers
+...

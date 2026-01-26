@@ -1,0 +1,24 @@
+---
+php_fpm_config: |
+  [global]
+  pid = /run/php/php{{ php_fpm_version }}-fpm.pid
+  error_log = /var/log/php{{ php_fpm_version }}-fpm.log
+  include=/etc/php/{{ php_fpm_version }}/fpm/pool.d/*.conf
+php_fpm_php_config:
+php_fpm_modules: []
+php_fpm_modules_config: {}
+php_fpm_pools_config:
+  www: |
+    [www]
+    user = www-data
+    group = www-data
+    listen = /run/php/php8.3-fpm.sock
+    listen.owner = www-data
+    listen.group = www-data
+    pm = dynamic
+    pm.max_children = 5
+    pm.start_servers = 2
+    pm.min_spare_servers = 1
+    pm.max_spare_servers = 3
+php_fpm_version: "8.3"
+...

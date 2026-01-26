@@ -1,0 +1,82 @@
+---
+- name: Install LVM
+  ansible.builtin.apt:
+    name: lvm2
+    update_cache: true
+    cache_valid_time: 3600
+    state: present
+  retries: 10
+  delay: 10
+
+- name: Update lvm.conf
+  ansible.builtin.copy:
+    content: '{{ lvm_lvm_conf }}'
+    dest: /etc/lvm/lvm.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Update lvmlocal.conf
+  ansible.builtin.copy:
+    content: '{{ lvm_lvmlocal_conf }}'
+    dest: /etc/lvm/lvmlocal.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Import LVM lockd tasks
+  ansible.builtin.import_tasks: lockd.yml
+  when: lvm_lockd
+
+- name: Getting physical volumes signatures
+  ansible.builtin.command:
+    cmd: wipefs --no-act --noheadings {{ item | join(' ') }}
+  changed_when: false
+  loop: '{{ lvm_vgs | map(attribute="pvs") }}'
+  register: lvm_pvs_sigs
+
+- name: Create volume groups
+  ansible.builtin.command: >
+    vgcreate {{ lvm_create_opts }}
+  changed_when: true
+  when:
+    - not lvm_pvs_sigs.results[i].stdout
+    - item.vg not in lvm_facts_vgs | map(attribute='vg_name')
+  loop: '{{ lvm_vgs }}'
+  loop_control:
+    index_var: i
+    label: '{{ item.vg }}'
+
+- name: Create logical volumes
+  ansible.builtin.command: >
+    lvcreate {{ lvm_create_opts }}
+    --activate n
+    --name {{ item.lv | ansible.builtin.quote }}
+  changed_when: true
+  when: item.lv not in lvm_facts_lvs | selectattr('vg_name', 'eq', item.vg) |
+    map(attribute='lv_name')
+  loop: '{{ lvm_lvs }}'
+  loop_control:
+    label: '{{ item.vg }}/{{ item.lv }}'
+
+- name: Activate logical volumes
+  ansible.builtin.shell: |
+    set -eu
+    set -o pipefail
+    {% if item.shared | default(False) %}
+    vgchange --lockstart {{ item.vg | ansible.builtin.quote }}
+    lvchange -asy {{ item.vg | ansible.builtin.quote }}/{{
+      item.lv | ansible.builtin.quote }}
+    {% else %}
+    lvchange -asy {{ item.vg | ansible.builtin.quote }}/{{
+      item.lv | ansible.builtin.quote }}
+    {% endif %}
+  args:
+    executable: /bin/bash
+  changed_when: true
+  when: item.lv not in lvm_facts_lvs | selectattr('vg_name', 'eq', item.vg) |
+    selectattr('lv_active', 'eq', 'active') | map(attribute='lv_name')
+  loop: '{{ lvm_activate }}'
+  loop_control:
+    label: '{{ item.vg }}/{{ item.lv }}'
+...

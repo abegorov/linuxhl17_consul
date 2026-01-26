@@ -1,0 +1,26 @@
+---
+- name: Import install tasks
+  ansible.builtin.import_tasks: install.yml
+
+- name: Import config tasks
+  ansible.builtin.import_tasks: config.yml
+
+- name: Import certs tasks
+  ansible.builtin.import_role:
+    name: tls_copy
+    public: false
+  vars:
+    tls_copy_certs: ['{{ mariadb_certs }}']
+    tls_copy_key_owner: mysql
+    tls_copy_notify: Restart mariadb service
+
+- name: Enable and start mariadb service
+  ansible.builtin.systemd_service:
+    name: mariadb.service
+    enabled: true
+    state: started
+  ignore_errors: '{{ ansible_check_mode }}'
+
+- name: Force all notified handlers to run
+  ansible.builtin.meta: flush_handlers
+...

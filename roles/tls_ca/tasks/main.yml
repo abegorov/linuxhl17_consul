@@ -1,0 +1,61 @@
+---
+- name: Create directories for certs and keys
+  become: false
+  delegate_to: localhost
+  run_once: true
+  ansible.builtin.file:
+    path: '{{ item }}'
+    mode: '0755'
+    state: directory
+  loop: '{{ (tls_ca_certs | map(attribute="cert_path") +
+             tls_ca_certs | map(attribute="key_path"))
+    | map("ansible.builtin.dirname") | ansible.builtin.unique }}'
+
+- name: Create private keys for CA
+  become: false
+  delegate_to: localhost
+  run_once: true
+  community.crypto.openssl_privatekey:
+    path: '{{ item.key_path }}'
+  loop: '{{ tls_ca_certs }}'
+  no_log: '{{ not debug }}'
+
+- name: Create certificate signing requests (CSRs) for CA certificates
+  become: false
+  delegate_to: localhost
+  run_once: true
+  community.crypto.openssl_csr_pipe:
+    basic_constraints: '{{ item.basic_constraints |
+      default(tls_ca_basic_constraints) }}'
+    basic_constraints_critical: '{{ item.basic_constraints_critical |
+      default(tls_ca_basic_constraints_critical) }}'
+    common_name: '{{ item.common_name | default(tls_ca_common_name) }}'
+    key_usage: '{{ item.key_usage | default(tls_ca_key_usage) }}'
+    key_usage_critical: '{{ item.key_usage_critical |
+      default(tls_ca_key_usage_critical) }}'
+    privatekey_path: '{{ item.key_path }}'
+    use_common_name_for_san: '{{ item.use_common_name_for_san |
+      default(tls_ca_use_common_name_for_san) }}'
+  changed_when: false
+  loop: '{{ tls_ca_certs }}'
+  no_log: '{{ not debug }}'
+  register: tls_ca_csrs
+
+- name: Create self-signed CA certificates from CSRs
+  become: false
+  delegate_to: localhost
+  run_once: true
+  community.crypto.x509_certificate:
+    csr_content: "{{ item.csr }}"
+    ignore_timestamps: '{{ item.item.ignore_timestamps |
+      default(tls_ca_ignore_timestamps) }}'
+    path: '{{ item.item.cert_path }}'
+    privatekey_path: '{{ item.privatekey }}'
+    provider: selfsigned
+    selfsigned_not_after: '{{ item.item.not_after |
+      default(tls_ca_not_after) }}'
+    selfsigned_not_before: '{{ item.item.not_before |
+      default(tls_ca_not_before) }}'
+  loop: '{{ tls_ca_csrs.results }}'
+  no_log: '{{ not debug }}'
+...

@@ -1,0 +1,41 @@
+---
+- name: Initialize database if not exists
+  become: true
+  become_user: '{{ glpi_user }}'
+  ansible.builtin.shell: |
+    set -e
+    set -o pipefail
+    php bin/console -qn db:install -L {{ glpi_language |
+      ansible.builtin.quote }}
+  args:
+    chdir: '{{ glpi_dir }}'
+    executable: /bin/bash
+  changed_when: true
+  when: glpi_db_name not in glpi_databases_list.databases
+  register: _glpi_db_create
+
+- name: Slurp GLPI keys
+  run_once: true
+  ansible.builtin.slurp:
+    src: '{{ glpi_config_dir }}/{{ item }}'
+  loop: '{{ glpi_keys.keys() }}'
+  register: _glpi_keys_content
+  when: _glpi_db_create.changed  # noqa: no-handler
+
+- name: Save GLPI key files
+  become: false
+  delegate_to: localhost
+  run_once: true
+  vars:
+    content: '{{ _glpi_keys_content.results |
+      ansible.builtin.items2dict(key_name="item", value_name="content") }}'
+  ansible.builtin.copy:
+    content: '{{ content[item.key] }}'
+    dest: '{{ item.value }}'
+    mode: '0600'
+  loop: '{{ glpi_keys | ansible.builtin.dict2items }}'
+  loop_control:
+    label: '{{ item.key }}'
+  when: _glpi_db_create.changed  # noqa: no-handler
+  no_log: '{{ not debug }}'
+...

@@ -1,0 +1,26 @@
+---
+- name: Update MariaDB repo setup script
+  ansible.builtin.get_url:
+    url: https://r.mariadb.com/downloads/mariadb_repo_setup
+    dest: /usr/local/sbin/mariadb_repo_setup
+    owner: root
+    group: root
+    mode: '0755'
+    checksum: '{{ mariadb_repo_setup_checksum }}'
+
+- name: Setup MariaDB repo
+  ansible.builtin.command: >-
+    /usr/local/sbin/mariadb_repo_setup
+    --mariadb-server-version='{{ mariadb_version }}'
+  args:
+    creates: /etc/apt/sources.list.d/mariadb.list
+
+- name: Install MariaDB and tools
+  ansible.builtin.apt:
+    name:
+      - mariadb-server
+      - mariadb-client
+      - mariadb-backup
+      - python3-pymysql
+    state: present
+...

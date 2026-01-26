@@ -1,0 +1,32 @@
+---
+mariadb_certs_dir: secrets/certs/mariadb
+mariadb_ca_cert_path: '{{ mariadb_certs_dir }}/ca.crt'
+mariadb_ca_key_path: '{{ mariadb_certs_dir }}/ca.key'
+mariadb_cert_path: '{{ mariadb_certs_dir }}/{{ inventory_hostname }}.crt'
+mariadb_key_path: '{{ mariadb_certs_dir }}/{{ inventory_hostname }}.key'
+web_certs_dir: secrets/certs/web
+web_ca_cert_path: '{{ web_certs_dir }}/ca.crt'
+web_ca_key_path: '{{ web_certs_dir }}/ca.key'
+web_cert_path: '{{ web_certs_dir }}/{{ inventory_hostname }}.crt'
+web_key_path: '{{ web_certs_dir }}/{{ inventory_hostname }}.key'
+web_cert_not_after: '20270101000000Z'
+web_cert_not_before: '20260101000000Z'
+
+tls_ca_not_after: '21260101000000Z'
+tls_ca_not_before: '20260101000000Z'
+tls_ca_certs:
+  - common_name: LOCAL MARIADB ROOT CA
+    cert_path: '{{ mariadb_ca_cert_path }}'
+    key_path: '{{ mariadb_ca_key_path }}'
+  - common_name: LOCAL WEB ROOT CA
+    cert_path: '{{ web_ca_cert_path }}'
+    key_path: '{{ web_ca_key_path }}'
+
+tls_certs_not_after: '21260101000000Z'
+tls_certs_not_before: '20260101000000Z'
+tls_certs_subject_alt_name:
+  - 'DNS:{{ inventory_hostname_short }}'
+  - 'DNS:localhost'
+  - 'IP:{{ ip_address }}'
+  - 'IP:127.0.0.1'
+...

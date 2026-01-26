@@ -1,0 +1,51 @@
+---
+- name: Generate DH Parameters with a size 2048 bits
+  community.crypto.openssl_dhparam:
+    path: /etc/angie/dhparam
+    size: 2048
+
+- name: Configure angie
+  ansible.builtin.copy:
+    content: '{{ angie_conf }}'
+    dest: /etc/angie/angie.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload angie service
+
+- name: Configure angie modules
+  ansible.builtin.copy:
+    content: |
+      {% for module in angie_load_modules %}
+      load_module /etc/angie/modules/{{ module }}.so;
+      {% endfor %}
+    dest: /etc/angie/load_module.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload angie service
+
+- name: Configure angie http module
+  ansible.builtin.copy:
+    content: '{{ item.value }}'
+    dest: /etc/angie/http.d/{{ item.key }}.conf
+    owner: root
+    group: root
+    mode: '0644'
+  loop: '{{ angie_httpd_conf | ansible.builtin.dict2items }}'
+  loop_control:
+    label: '{{ item.key }}'
+  notify: Reload angie service
+
+- name: Configure angie stream module
+  ansible.builtin.copy:
+    content: '{{ item.value }}'
+    dest: /etc/angie/stream.d/{{ item.key }}.conf
+    owner: root
+    group: root
+    mode: '0644'
+  loop: '{{ angie_streamd_conf | ansible.builtin.dict2items }}'
+  loop_control:
+    label: '{{ item.key }}'
+  notify: Reload angie service
+...

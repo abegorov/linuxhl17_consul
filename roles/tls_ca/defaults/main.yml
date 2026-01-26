@@ -1,0 +1,16 @@
+---
+tls_ca_basic_constraints: ['CA:TRUE']
+tls_ca_basic_constraints_critical: true
+tls_ca_common_name: LOCAL ROOT CA
+tls_ca_ignore_timestamps: false
+tls_ca_key_usage: [keyCertSign]
+tls_ca_key_usage_critical: true
+tls_ca_not_after: '21250101000000Z'
+tls_ca_not_before: '20250101000000Z'
+tls_ca_use_common_name_for_san: false
+
+# tls_ca_certs:
+#   - cert_path: secrets/certs/ca.crt
+#     key_path: secrets/certs/ca.key
+tls_ca_certs: []
+...

@@ -1,0 +1,71 @@
+---
+glpi_version: '11.0.4'
+glpi_archive_name: glpi-{{ glpi_version }}.tgz
+glpi_download_url: https://github.com/glpi-project/glpi/releases/download/{{
+  glpi_version }}/{{ glpi_archive_name }}
+glpi_download_checksum: >-
+  sha256:a763297081a0085a72039efe67e1705c18101ef0c0ebca41c3c249f74055ee03.
+
+glpi_language: ru_RU
+
+glpi_user: glpi
+glpi_group: glpi
+
+glpi_dir: /usr/share/glpi
+glpi_cache_dir: /var/cache/glpi
+glpi_config_dir: /etc/glpi
+glpi_log_dir: /var/log/glpi
+glpi_var_dir: /var/lib/glpi
+
+glpi_keys:
+  glpicrypt.key: secrets/glpicrypt.key
+  oauth.pub: secrets/glpioauth.pub
+  oauth.pem: secrets/glpioauth.pem
+
+glpi_db_host: 127.0.0.1
+glpi_db_user: glpi
+glpi_db_password: ''
+glpi_db_name: glpi
+glpi_db_certs:
+  ca_path: '{{ glpi_config_dir }}/dbsslca.crt'
+  cert_path: '{{ glpi_config_dir }}/dbsslcert.crt'
+  key_path: '{{ glpi_config_dir }}/dbsslkey.key'
+  ca_content: '{{ lookup("ansible.builtin.file",
+    "secrets/certs/ca.crt") }}'
+  cert_content: '{{ lookup("ansible.builtin.file",
+    "secrets/certs/{{ inventory_hostname }}.crt") }}'
+  key_content: '{{ lookup("ansible.builtin.file",
+    "secrets/certs/{{ inventory_hostname }}.key") }}'
+
+glpi_config:
+  config_db: |
+    <?php
+    class DB extends DBmysql {
+      public $dbhost = '{{ glpi_db_host }}';
+      public $dbuser = '{{ glpi_db_user }}';
+      public $dbpassword = '{{ glpi_db_password | urlencode }}';
+      public $dbdefault = '{{ glpi_db_name }}';
+      public $dbssl = true;
+      public $dbsslca = '{{ glpi_db_certs.ca_path }}';
+      public $dbsslcert = '{{ glpi_db_certs.cert_path }}';
+      public $dbsslkey = '{{ glpi_db_certs.key_path }}';
+      public $use_utf8mb4 = true;
+      public $allow_myisam = false;
+      public $allow_datetime = false;
+      public $allow_signed_keys = false;
+    }
+  local_define: |
+    <?php
+    define('GLPI_VAR_DIR', '{{ glpi_var_dir }}');
+    define('GLPI_LOG_DIR', '{{ glpi_log_dir }}');
+
+glpi_config_attrs:
+  config_db:
+    owner: glpi
+    group: glpi
+    mode: '0600'
+  config_db_slave:
+    owner: glpi
+    group: glpi
+    mode: '0600'
+...

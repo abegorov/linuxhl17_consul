@@ -1,0 +1,56 @@
+---
+- name: Create directories for certs and keys
+  vars:
+    ca_paths: '{{ tls_copy_certs | selectattr("ca_path", "defined") |
+      map(attribute="ca_path") }}'
+    cert_paths: '{{ tls_copy_certs | selectattr("cert_path", "defined") |
+      map(attribute="cert_path") }}'
+    key_paths: '{{ tls_copy_certs | selectattr("key_path", "defined") |
+      map(attribute="key_path") }}'
+  ansible.builtin.file:
+    path: '{{ item }}'
+    mode: '0755'
+    state: directory
+  loop: '{{ (ca_paths + cert_paths + key_paths) |
+    map("ansible.builtin.dirname") | ansible.builtin.unique }}'
+
+- name: Update CA certificates
+  ansible.builtin.copy:
+    content: |
+      {{ item.ca_content }}
+    dest: '{{ item.ca_path }}'
+    owner: '{{ tls_copy_cert_owner }}'
+    group: '{{ tls_copy_cert_group }}'
+    mode: '{{ tls_copy_cert_mode }}'
+  loop: '{{ tls_copy_certs }}'
+  no_log: '{{ not debug }}'
+  notify: '{{ tls_copy_notify }}'
+  when: item.ca_path is defined
+
+- name: Update certificates
+  ansible.builtin.copy:
+    content: |
+      {{ item.cert_content }}
+      {% if item.ca_content is defined and item.ca_path is not defined %}
+      {{ item.ca_content }}
+      {% endif %}
+    dest: '{{ item.cert_path }}'
+    owner: '{{ tls_copy_cert_owner }}'
+    group: '{{ tls_copy_cert_group }}'
+    mode: '{{ tls_copy_cert_mode }}'
+  loop: '{{ tls_copy_certs }}'
+  notify: '{{ tls_copy_notify }}'
+  no_log: '{{ not debug }}'
+
+- name: Update keys
+  ansible.builtin.copy:
+    content: |
+      {{ item.key_content }}
+    dest: '{{ item.key_path }}'
+    owner: '{{ tls_copy_key_owner }}'
+    group: '{{ tls_copy_key_group }}'
+    mode: '{{ tls_copy_key_mode }}'
+  loop: '{{ tls_copy_certs }}'
+  notify: '{{ tls_copy_notify }}'
+  no_log: '{{ not debug }}'
+...

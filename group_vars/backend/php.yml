@@ -1,0 +1,28 @@
+php_fpm_config: |
+  [global]
+  pid = /run/php/php{{ php_fpm_version }}-fpm.pid
+  error_log = /var/log/php{{ php_fpm_version }}-fpm.log
+  include=/etc/php/{{ php_fpm_version }}/fpm/pool.d/*.conf
+php_fpm_php_config:
+php_fpm_modules: [bz2, bcmath, curl, gd, intl, ldap, mbstring, mysql, opcache, zip,
+  xml]
+php_fpm_modules_config:
+  20-session: |
+    session.cookie_secure = On
+    session.cookie_httponly = On
+    session.cookie_samesite = "Strict"
+php_fpm_pools_config:
+  www: |
+    [www]
+    user = {{ glpi_user }}
+    group = {{ glpi_group }}
+    listen = {{ php_fpm_sock }}
+    listen.owner = angie
+    listen.group = angie
+    pm = dynamic
+    pm.max_children = 5
+    pm.start_servers = 2
+    pm.min_spare_servers = 1
+    pm.max_spare_servers = 3
+php_fpm_sock: /run/php/php8.3-fpm.sock
+php_fpm_version: "8.3"

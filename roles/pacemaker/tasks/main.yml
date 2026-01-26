@@ -1,0 +1,37 @@
+---
+- name: Install pacemaker
+  ansible.builtin.apt:
+    name:
+      - pacemaker
+      - resource-agents-extra
+      - fence-agents-base
+      - fence-agents-extra
+      - pacemaker-cli-utils
+      - python3-pacemaker
+      - cluster-glue
+      - crmsh
+    update_cache: true
+    cache_valid_time: 3600
+    state: present
+  retries: 10
+  delay: 10
+
+- name: Import pcsd tasks
+  ansible.builtin.import_tasks: pcsd.yml
+
+- name: Import config tasks
+  ansible.builtin.import_tasks: cib.yml
+
+- name: Enable and start services
+  ansible.builtin.systemd_service:
+    name: '{{ item }}'
+    enabled: true
+    state: started
+  loop:
+    - corosync.service
+    - pacemaker.service
+  ignore_errors: '{{ ansible_check_mode }}'
+
+- name: Force all notified handlers to run at this point
+  ansible.builtin.meta: flush_handlers
+...

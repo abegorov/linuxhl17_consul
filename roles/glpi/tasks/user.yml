@@ -1,0 +1,20 @@
+---
+- name: Create glpi group
+  ansible.builtin.group:
+    name: glpi
+    gid: '{{ glpi_gid }}'
+    state: present
+
+- name: Create glpi user
+  ansible.builtin.user:
+    name: glpi
+    system: true
+    password: 'x'
+    uid: '{{ glpi_uid }}'
+    group: glpi
+    comment: GLPI IT Management Software]
+    home: '{{ glpi_var_dir }}'
+    shell: /sbin/nologin
+    create_home: false
+    state: present
+...

@@ -1,0 +1,22 @@
+---
+- name: Update MariaDB main configuration
+  ansible.builtin.copy:
+    content: '{{ mariadb_config }}'
+    dest: /etc/mysql/mariadb.cnf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart mariadb service
+
+- name: Update MariaDB configuration files
+  ansible.builtin.copy:
+    content: '{{ item.value }}'
+    dest: /etc/mysql/mariadb.conf.d/{{ item.key }}.cnf
+    owner: root
+    group: root
+    mode: '0644'
+  loop: '{{ mariadb_confd_files | ansible.builtin.dict2items }}'
+  loop_control:
+    label: '{{ item.key }}'
+  notify: Restart mariadb service
+...

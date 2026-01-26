@@ -1,0 +1,16 @@
+---
+- name: Install distributed lock manager
+  ansible.builtin.apt:
+    name: dlm-controld
+    update_cache: true
+    cache_valid_time: 3600
+    state: present
+  retries: 10
+  delay: 10
+
+- name: Enable and start dlm service
+  ansible.builtin.systemd_service:
+    name: dlm.service
+    enabled: true
+    state: started
+...

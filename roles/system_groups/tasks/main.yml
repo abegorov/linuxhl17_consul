@@ -1,0 +1,11 @@
+---
+- name: Create groups
+  ansible.builtin.group:
+    name: '{{ item.name }}'
+    system: '{{ item.system | default(system_groups_system) }}'
+    gid: '{{ item.gid | default(system_groups_gid) }}'
+    state: present
+  loop: '{{ system_groups_list }}'
+  loop_control:
+    label: '{{ item.name }}'
+...

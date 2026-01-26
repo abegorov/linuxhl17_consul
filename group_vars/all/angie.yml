@@ -1,0 +1,49 @@
+---
+angie_modules: [vts]
+angie_load_modules: [ngx_http_vhost_traffic_status_module]
+angie_web_cert:
+  cert_path: /etc/angie/certs/web.crt
+  key_path: /etc/angie/certs/web.key
+  ca_content: '{{ lookup("ansible.builtin.file", web_ca_cert_path) }}'
+  cert_content: '{{ lookup("ansible.builtin.file", web_cert_path) }}'
+  key_content: '{{ lookup("ansible.builtin.file", web_key_path) }}'
+angie_certs: ['{{ angie_web_cert }}']
+
+angie_httpd_conf_default:
+  default: |
+    server {
+      listen 80 default_server reuseport;
+      listen [::]:80 default_server reuseport;
+
+      return 301 https://$host$request_uri;
+    }
+angie_httpd_conf_status:
+  status: |
+    vhost_traffic_status_zone;
+    vhost_traffic_status_histogram_buckets 0.005 0.01 0.05 0.1 0.5 1 5 10;
+    vhost_traffic_status_filter off;
+    vhost_traffic_status_filter_check_duplicate off;
+    vhost_traffic_status_limit off;
+    vhost_traffic_status_limit_check_duplicate off;
+
+    server {
+      listen 9443 default_server reuseport ssl;
+      listen [::]:9443 default_server reuseport ssl;
+      http2 on;
+
+      ssl_certificate     {{ angie_web_cert.cert_path }};
+      ssl_certificate_key {{ angie_web_cert.key_path }};
+
+      location / {
+        vhost_traffic_status_display;
+        vhost_traffic_status_display_format html;
+      }
+
+      location = /metrics {
+        vhost_traffic_status_display;
+        vhost_traffic_status_display_format prometheus;
+      }
+    }
+angie_httpd_conf: '{{ angie_httpd_conf_default | ansible.builtin.combine(
+  angie_httpd_conf_status) }}'
+...

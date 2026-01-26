@@ -1,0 +1,49 @@
+---
+- name: Install python3-pymysql and acl
+  ansible.builtin.apt:
+    name:
+      - acl
+      - python3-pymysql
+    state: present
+
+- name: Touch GLPI keys
+  ansible.builtin.copy:
+    content: ''
+    dest: '{{ glpi_config_dir }}/{{ item }}'
+    force: false
+    owner: '{{ glpi_user }}'
+    group: '{{ glpi_group }}'
+    mode: '0660'
+  loop: '{{ glpi_keys.keys() }}'
+
+- name: List databases
+  run_once: true
+  community.mysql.mysql_info:
+    login_host: '{{ glpi_db_host }}'
+    login_user: '{{ glpi_db_user }}'
+    login_password: '{{ glpi_db_password }}'
+    login_db: '{{ glpi_db_name }}'
+    ca_cert: '{{ glpi_db_certs.ca_path }}'
+    client_cert: '{{ glpi_db_certs.cert_path }}'
+    client_key: '{{ glpi_db_certs.key_path }}'
+    filter: databases
+    return_empty_dbs: false
+  register: glpi_databases_list
+
+- name: Initialize database tasks
+  run_once: true
+  ansible.builtin.include_tasks: dbinit.yml
+
+- name: Update GLPI key files
+  ansible.builtin.copy:
+    content: '{{ lookup("ansible.builtin.file", item.value) |
+      ansible.builtin.b64decode }}'
+    dest: '{{ glpi_config_dir }}/{{ item.key }}'
+    owner: '{{ glpi_user }}'
+    group: '{{ glpi_group }}'
+    mode: '0660'
+  loop: '{{ glpi_keys | ansible.builtin.dict2items }}'
+  loop_control:
+    label: '{{ item.key }}'
+  no_log: '{{ not debug }}'
+...

@@ -1,0 +1,5 @@
+---
+mariadb_timezones_socket: /run/mysqld/mysqld.sock
+mariadb_timezones_login: root
+mariadb_timezones_password: ''
+...

@@ -1,0 +1,7 @@
+---
+mariadb_databases_socket: /run/mysqld/mysqld.sock
+mariadb_databases_login: root
+mariadb_databases_password: ''
+
+mariadb_databases_list: []
+...

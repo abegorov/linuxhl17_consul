@@ -1,0 +1,61 @@
+---
+- name: Install php-fpm and required php modules
+  ansible.builtin.apt:
+    name: '{{ ["php" + php_fpm_version + "-fpm"] +
+      ["php" + php_fpm_version] |
+      ansible.builtin.product(php_fpm_modules) | map("join", "-") }}'
+    state: present
+
+- name: Configure php for php-fpm
+  ansible.builtin.copy:
+    content: '{{ php_fpm_config }}'
+    dest: /etc/php/{{ php_fpm_version }}/fpm/php-fpm.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload php-fpm service
+
+- name: Configure php modules for php-fpm
+  ansible.builtin.copy:
+    content: '{{ item.value }}'
+    dest: /etc/php/{{ php_fpm_version }}/fpm/conf.d/{{ item.key }}.ini
+    owner: root
+    group: root
+    mode: '0644'
+  loop: '{{ php_fpm_modules_config | ansible.builtin.dict2items }}'
+  loop_control:
+    label: '{{ item.key }}'
+  notify: Reload php-fpm service
+
+- name: Configure php-fpm
+  ansible.builtin.copy:
+    content: '{{ php_fpm_php_config }}'
+    dest: /etc/php/{{ php_fpm_version }}/fpm/php-fpm.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart php-fpm service
+  when: php_fpm_php_config != None
+
+- name: Configure php-fpm pools
+  ansible.builtin.copy:
+    content: '{{ item.value }}'
+    dest: /etc/php/{{ php_fpm_version }}/fpm/pool.d/{{ item.key }}.conf
+    owner: root
+    group: root
+    mode: '0644'
+  loop: '{{ php_fpm_pools_config | ansible.builtin.dict2items }}'
+  loop_control:
+    label: '{{ item.key }}'
+  notify: Restart php-fpm service
+
+- name: Enable and start php-fpm service
+  ansible.builtin.systemd_service:
+    name: php{{ php_fpm_version }}-fpm.service
+    enabled: true
+    state: started
+  ignore_errors: '{{ ansible_check_mode }}'
+
+- name: Force all notified handlers to run
+  ansible.builtin.meta: flush_handlers
+...

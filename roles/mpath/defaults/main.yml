@@ -1,0 +1,46 @@
+---
+mpath_aliases: {}
+mpath_defaults:
+  user_friendly_names: true
+  find_multipaths: true
+  path_selector: round-robin 0
+  path_grouping_policy: failover
+  failback: immediate
+  polling_interval: 1
+  max_polling_interval: 4
+  no_path_retry: fail
+mpath_defaults_override: {}
+mpath_blacklist:
+  - devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st)[0-9]*"
+  - devnode "^hd[a-z]"
+mpath_blacklist_add: []
+mpath_config: |
+  defaults {
+  {%
+    set config = mpath_defaults |
+      ansible.builtin.combine(mpath_defaults_override)
+  %}
+  {% for key, value in config.items() %}
+  {% if value is boolean %}
+    {{ key }} {{ 'yes' if value else 'no' }}
+  {% elif value is number %}
+    {{ key }} {{ value }}
+  {% else %}
+    {{ key }} "{{ value }}"
+  {% endif %}
+  {% endfor %}
+  }
+  blacklist {
+  {% for value in mpath_blacklist + mpath_blacklist_add %}
+    {{ value }}
+  {% endfor %}
+  }
+  multipaths {
+  {% for alias, wwid in mpath_aliases %}
+    multipath {
+      wwid {{ wwid }}
+      alias {{ alias }}
+    }
+  {% endfor %}
+  }
+...

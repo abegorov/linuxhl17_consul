@@ -1,0 +1,28 @@
+---
+mdadm_create:
+  - raid_device: '{{ mdadm_raid_device }}'
+    component_devices: '{{ mdadm_component_devices }}'
+    opts:
+      bitmap: clustered
+      raid-devices: 2
+      level: mirror
+      metadata: '1.2'
+      uuid: '{{ mdadm_raid_uuid }}'
+
+lvm_vgs:
+  - vg: '{{ vg }}'
+    pvs: '{{ pvs }}'
+    opts:
+      shared: true
+
+lvm_lvs:
+  - vg: '{{ vg }}'
+    lv: '{{ lv }}'
+    opts:
+      extents: 100%VG
+
+filesystem_devs:
+  - dev: /dev/{{ vg }}/{{ lv }}
+    fstype: gfs2
+    opts: -O -j3 -p lock_dlm -t {{ corosync_cluster_name }}:gfs2
+...

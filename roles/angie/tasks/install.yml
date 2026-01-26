@@ -1,0 +1,11 @@
+---
+- name: Install angie and required module
+  ansible.builtin.apt:
+    update_cache: true
+    name: '{{ ["angie", "ca-certificates"] + ["angie-module-"] |
+      ansible.builtin.product(angie_modules) | map("join") }}'
+    cache_valid_time: 3600
+    state: present
+  retries: 10
+  delay: 10
+...

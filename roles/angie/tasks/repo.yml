@@ -1,0 +1,22 @@
+---
+- name: Download angie repository key
+  ansible.builtin.get_url:
+    url: '{{ angie_signing_key }}'
+    dest: '{{ angie_signing_key_path }}'
+    checksum: '{{ angie_signing_key_checksum }}'
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Add angie repository
+  ansible.builtin.apt_repository:
+    repo: "deb
+      [arch=amd64
+      signed-by={{ angie_signing_key_path }}]
+      {{ angie_repo_mirror }}/{{ ansible_facts.distribution | lower }}/\
+      {{ ansible_facts.distribution_version }}
+      {{ ansible_facts.distribution_release }}
+      main"
+    filename: angie
+    state: present
+...

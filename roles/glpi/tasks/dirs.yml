@@ -1,0 +1,65 @@
+---
+- name: Create GLPI directory
+  ansible.builtin.file:
+    path: '{{ glpi_dir }}'
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create GLPI cache directory
+  ansible.builtin.file:
+    path: '{{ glpi_cache_dir }}'
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create GLPI config directory
+  ansible.builtin.file:
+    path: '{{ glpi_config_dir }}'
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create GLPI log directory
+  ansible.builtin.file:
+    path: '{{ glpi_log_dir }}'
+    state: directory
+    owner: '{{ glpi_user }}'
+    group: '{{ glpi_user }}'
+    mode: '0755'
+
+- name: Create GLPI var directory
+  ansible.builtin.file:
+    path: '{{ glpi_var_dir }}'
+    state: directory
+    owner: '{{ glpi_user }}'
+    group: '{{ glpi_user }}'
+    mode: '0755'
+
+- name: Create GLPI var subdirs
+  ansible.builtin.file:
+    path: '{{ glpi_var_dir }}/{{ item }}'
+    state: directory
+    owner: '{{ glpi_user }}'
+    group: '{{ glpi_user }}'
+    mode: '0755'
+  loop:
+    - _cache
+    - _cron
+    - _dumps
+    - _graphs
+    - _inventories
+    - _locales
+    - _lock
+    - _log
+    - _pictures
+    - _plugins
+    - _rss
+    - _sessions
+    - _themes
+    - _tmp
+    - _uploads
+...

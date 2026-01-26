@@ -1,0 +1,7 @@
+---
+- name: Reload angie service
+  ansible.builtin.command: angie -s reload
+  changed_when: true
+  when: angie_service.status.ActiveState == 'active'
+  ignore_errors: '{{ ansible_check_mode }}'
+...

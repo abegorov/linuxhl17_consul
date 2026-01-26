@@ -1,0 +1,10 @@
+---
+- name: Create new databases
+  community.mysql.mysql_db:
+    login_unix_socket: '{{ mariadb_databases_socket }}'
+    login_user: '{{ mariadb_databases_login }}'
+    login_password: '{{ mariadb_databases_password }}'
+    name: '{{ mariadb_databases_list }}'
+    state: present
+  when: mariadb_databases_list | length > 0
+...

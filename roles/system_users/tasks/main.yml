@@ -1,0 +1,20 @@
+---
+- name: Create users
+  ansible.builtin.user:
+    name: '{{ item.name }}'
+    system: '{{ item.system | default(system_users_system) }}'
+    password: '{{ item.password | default(system_users_password) }}'
+    uid: '{{ item.uid | default(system_users_uid) }}'
+    append: '{{ item.append | default(system_users_append) }}'
+    group: '{{ item.group | default(system_users_group) }}'
+    groups: '{{ item.groups | default(system_users_groups) }}'
+    comment: '{{ item.comment | default(system_users_comment) }}'
+    home: '{{ item.home | default(system_users_home) }}'
+    shell: '{{ item.shell | default(system_users_shell) }}'
+    create_home: '{{ item.create_home | default(system_users_create_home) }}'
+    skeleton: '{{ item.skeleton | default(system_users_skeleton) }}'
+    state: present
+  loop: '{{ system_users_list }}'
+  loop_control:
+    label: '{{ item.name }}'
+...

@@ -1,0 +1,7 @@
+---
+- name: Restart GLPI timer
+  ansible.builtin.systemd_service:
+    name: glpi.timer
+    state: restarted
+  ignore_errors: '{{ ansible_check_mode }}'
+...

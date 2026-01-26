@@ -1,0 +1,29 @@
+---
+- name: Download GLPI archive
+  ansible.builtin.get_url:
+    url: '{{ glpi_download_url }}'
+    dest: '{{ glpi_cache_dir }}/{{ glpi_archive_name }}'
+    checksum: '{{ glpi_download_checksum }}'
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Unarchive GLPI archive
+  ansible.builtin.unarchive:
+    src: '{{ glpi_cache_dir }}/{{ glpi_archive_name }}'
+    dest: '{{ glpi_dir }}'
+    creates: '{{ glpi_dir }}/version/{{ glpi_version }}'
+    owner: root
+    group: root
+    remote_src: true
+    extra_opts:
+      - --strip-components=1
+
+- name: Fix permissions for marketplace directory
+  ansible.builtin.file:
+    path: '{{ glpi_dir }}/marketplace'
+    state: directory
+    owner: glpi
+    group: glpi
+    mode: '0755'
+...

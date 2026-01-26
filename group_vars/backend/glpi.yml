@@ -1,0 +1,20 @@
+---
+glpi_dir: /usr/share/glpi
+glpi_cache_dir: /var/cache/glpi
+glpi_config_dir: /etc/glpi
+glpi_log_dir: /var/log/glpi
+glpi_var_dir: /var/lib/glpi
+
+glpi_user: glpi
+glpi_group: glpi
+glpi_uid: 60000
+glpi_gid: 60000
+
+glpi_db_certs:
+  ca_path: '{{ glpi_config_dir }}/dbsslca.crt'
+  cert_path: '{{ glpi_config_dir }}/dbsslcert.crt'
+  key_path: '{{ glpi_config_dir }}/dbsslkey.key'
+  ca_content: '{{ lookup("ansible.builtin.file", mariadb_ca_cert_path) }}'
+  cert_content: '{{ lookup("ansible.builtin.file", mariadb_cert_path) }}'
+  key_content: '{{ lookup("ansible.builtin.file", mariadb_key_path) }}'
+...

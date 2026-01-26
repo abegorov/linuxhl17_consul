@@ -1,0 +1,32 @@
+---
+- name: Configure config directory path
+  ansible.builtin.template:
+    src: downstream.php
+    dest: '{{ glpi_dir }}/inc/downstream.php'
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Configure GLPI
+  ansible.builtin.copy:
+    content: '{{ item.value }}'
+    dest: '{{ glpi_config_dir }}/{{ item.key }}.php'
+    owner: '{{ glpi_config_attrs[item.key].owner | default("root") }}'
+    group: '{{ glpi_config_attrs[item.key].group | default("root") }}'
+    mode: '{{ glpi_config_attrs[item.key].mode | default("0644") }}'
+  loop: '{{ glpi_config | ansible.builtin.dict2items }}'
+  loop_control:
+    label: '{{ item.key }}'
+  no_log: true
+
+- name: Import certs tasks
+  ansible.builtin.import_role:
+    name: tls_copy
+    public: false
+  vars:
+    tls_copy_certs: ['{{ glpi_db_certs }}']
+    tls_copy_key_owner: '{{ glpi_user }}'
+
+- name: Create database
+  ansible.builtin.import_tasks: database.yml
+...

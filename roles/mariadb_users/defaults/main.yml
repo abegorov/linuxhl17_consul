@@ -1,0 +1,13 @@
+---
+mariadb_users_socket: /run/mysqld/mysqld.sock
+mariadb_users_login: root
+mariadb_users_password: ''
+
+mariadb_users_remove_anonymous: false
+
+mariadb_users_default:
+  host: '%'
+  password_expire: never
+  column_case_sensitive: true
+mariadb_users_list: []
+...

@@ -1,0 +1,12 @@
+- name: Update user passwords file {{ passwd.name }}
+  community.general.htpasswd:
+    path: /etc/angie/{{ passwd.name }}.htpasswd
+    create: true
+    name: '{{ item.name }}'
+    password: '{{ item.password }}'
+    hash_scheme: sha512_crypt
+    owner: root
+    group: angie
+    mode: '0640'
+  loop: '{{ passwd.records }}'
+  no_log: '{{ not debug }}'

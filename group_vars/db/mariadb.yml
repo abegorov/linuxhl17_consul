@@ -1,0 +1,35 @@
+---
+mariadb_version: 'mariadb-11.7'
+
+mariadb_certs:
+  ca_path: /etc/mysql/mariadb_ca.crt
+  cert_path: /etc/mysql/mariadb.crt
+  key_path: /etc/mysql/mariadb.key
+  ca_content: '{{ lookup("ansible.builtin.file", mariadb_ca_cert_path) }}'
+  cert_content: '{{ lookup("ansible.builtin.file", mariadb_cert_path) }}'
+  key_content: '{{ lookup("ansible.builtin.file", mariadb_key_path) }}'
+
+mariadb_config_default:
+  bind-address: '127.0.0.1,{{ ip_address }}'
+  expire_logs_days: 10
+  server_id: 0
+  gtid_domain_id: 0
+  gtid_strict_mode: true
+  skip_name_resolve: true
+  wait_timeout: 60
+  log_bin: true
+  log-basename: mariadb
+  binlog_format: ROW
+  binlog_expire_logs_seconds: 604800
+  max_binlog_size: 16M
+  ssl_ca: '{{ mariadb_certs.ca_path }}'
+  ssl_cert: '{{ mariadb_certs.cert_path }}'
+  ssl_key: '{{ mariadb_certs.key_path }}'
+
+mariadb_users_list:
+  - name: '{{ glpi_db_user }}'
+    password: '{{ glpi_db_password }}'
+    priv: '{{ glpi_db_name }}.*:ALL/mysql.time_zone_name:SELECT'
+
+mariadb_databases_list: ['{{ glpi_db_name }}']
+...

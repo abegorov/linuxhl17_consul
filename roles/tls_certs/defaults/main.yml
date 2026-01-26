@@ -1,0 +1,22 @@
+---
+tls_certs_ca_content: '{{ undef(hint="tls_certs_ca_content") }}'
+tls_certs_ca_key_content: '{{ undef(hint="tls_certs_ca_key_content") }}'
+tls_certs_common_name: '{{ inventory_hostname }}'
+tls_certs_extended_key_usage: [serverAuth, clientAuth]
+tls_certs_extended_key_usage_critical: false
+tls_certs_ignore_timestamps: false
+tls_certs_key_usage_critical: false
+tls_certs_key_usage: [digitalSignature, keyEncipherment]
+tls_certs_not_after: '21250101000000Z'
+tls_certs_not_before: '20250101000000Z'
+tls_certs_subject_alt_name:
+  - 'DNS:{{ inventory_hostname_short }}'
+  - 'DNS:localhost'
+  - 'IP:127.0.0.1'
+tls_certs_use_common_name_for_san: false
+
+# tls_certs_certs:
+#   - cert_path: secrets/certs/{{ inventory_hostname }}.crt
+#     key_path: secrets/certs/{{ inventory_hostname }}.key
+tls_certs_certs: []
+...
