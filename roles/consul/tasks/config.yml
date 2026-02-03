@@ -1,0 +1,71 @@
+---
+- name: Create consul group
+  ansible.builtin.group:
+    name: '{{ consul_group }}'
+    system: true
+    state: present
+
+- name: Create consul user
+  ansible.builtin.user:
+    name: '{{ consul_user }}'
+    password: '!'
+    group: '{{ consul_group }}'
+    system: true
+    shell: /usr/sbin/nologin
+    comment: HashiCorp Consul
+    home: '{{ consul_home_dir }}'
+    create_home: true
+    skeleton: /dev/null
+    state: present
+
+- name: Create config directory
+  ansible.builtin.file:
+    path: '{{ consul_config_dir }}'
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create data directory
+  ansible.builtin.file:
+    path: '{{ consul_data_dir }}'
+    state: directory
+    owner: '{{ consul_user }}'
+    group: '{{ consul_group }}'
+    mode: '0755'
+
+- name: Update consul environment
+  ansible.builtin.copy:
+    content: '{{ consul_env }}'
+    dest: '{{ consul_config_dir }}/{{ consul_env_file }}'
+    owner: root
+    group: root
+    mode: '0640'
+  notify: Restart consul service
+
+- name: Update consul config
+  ansible.builtin.copy:
+    content: '{{ consul_config }}'
+    dest: '{{ consul_config_dir }}/{{ consul_config_file }}'
+    owner: root
+    group: '{{ consul_group }}'
+    mode: '0640'
+  notify: Reload consul service
+
+- name: Update consul service
+  ansible.builtin.template:
+    src: consul.service
+    dest: /etc/systemd/system/consul.service
+    owner: root
+    group: root
+    mode: '0755'
+  notify: Restart consul service
+
+- name: Enable and start consul service
+  ansible.builtin.systemd_service:
+    name: consul.service
+    daemon_reload: true
+    enabled: true
+    state: started
+  ignore_errors: '{{ ansible_check_mode }}'
+...

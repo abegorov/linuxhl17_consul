@@ -1,0 +1,32 @@
+---
+consul_mirror: https://mirror.yandex.ru/mirrors/releases.hashicorp.com/consul
+consul_version: '1.22.3'
+consul_url: '{{ consul_mirror }}/{{ consul_version }}/consul_{{ consul_version
+  }}_linux_amd64.zip'
+
+consul_bin_dir: /usr/local/bin
+consul_data_dir: '{{ consul_home_dir }}/data'
+consul_home_dir: /var/lib/consul
+consul_config_dir: /etc/consul
+consul_config_file: consul.hcl
+consul_env_file: consul.env
+
+consul_user: consul
+consul_group: consul
+
+consul_config: ''
+consul_env: ''
+
+consul_certs_dir: secrets/certs/consul
+consul_ca_cert_path: '{{ consul_certs_dir }}/ca.crt'
+consul_ca_key_path: '{{ consul_certs_dir }}/ca.key'
+consul_cert_path: '{{ consul_certs_dir }}/{{ inventory_hostname }}.crt'
+consul_key_path: '{{ consul_certs_dir }}/{{ inventory_hostname }}.key'
+consul_certs:
+  - ca_path: '{{ consul_config_dir }}/ca.crt'
+    cert_path: '{{ consul_config_dir }}/consul.crt'
+    key_path: '{{ consul_config_dir }}/consul.key'
+    ca_content: '{{ lookup("ansible.builtin.file", consul_ca_cert_path) }}'
+    cert_content: '{{ lookup("ansible.builtin.file", consul_cert_path) }}'
+    key_content: '{{ lookup("ansible.builtin.file", consul_key_path) }}'
+...

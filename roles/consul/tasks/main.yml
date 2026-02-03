@@ -1,0 +1,24 @@
+---
+- name: Import install tasks
+  ansible.builtin.import_tasks: install.yml
+  tags: [consul, consul_install]
+
+- name: Import config tasks
+  ansible.builtin.import_tasks: config.yml
+  tags: [consul, consul_config]
+
+- name: Import certs tasks
+  ansible.builtin.import_role:
+    name: tls_copy
+    public: false
+  vars:
+    tls_copy_certs: '{{ consul_certs }}'
+    tls_copy_cert_owner: root
+    tls_copy_cert_group: '{{ consul_group }}'
+    tls_copy_cert_mode: '0644'
+    tls_copy_key_owner: root
+    tls_copy_key_group: '{{ consul_group }}'
+    tls_copy_key_mode: '0640'
+    tls_copy_notify: Reload consul service
+  tags: [consul, consul_certs]
+...
