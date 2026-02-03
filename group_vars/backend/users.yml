@@ -4,7 +4,7 @@ system_groups_list:
     gid: '{{ glpi_gid }}'
 system_users_list:
   - name: '{{ glpi_user }}'
-    password: 'x'
+    password: '!'
     uid: '{{ glpi_uid }}'
     group: '{{ glpi_group }}'
     comment: GLPI IT Management Software
