@@ -1,4 +1,9 @@
 ---
+consul_certs_dir: secrets/certs/consul
+consul_ca_cert_path: '{{ consul_certs_dir }}/ca.crt'
+consul_ca_key_path: '{{ consul_certs_dir }}/ca.key'
+consul_cert_path: '{{ consul_certs_dir }}/{{ inventory_hostname }}.crt'
+consul_key_path: '{{ consul_certs_dir }}/{{ inventory_hostname }}.key'
 mariadb_certs_dir: secrets/certs/mariadb
 mariadb_ca_cert_path: '{{ mariadb_certs_dir }}/ca.crt'
 mariadb_ca_key_path: '{{ mariadb_certs_dir }}/ca.key'
@@ -15,6 +20,9 @@ web_cert_not_before: '20260101000000Z'
 tls_ca_not_after: '21260101000000Z'
 tls_ca_not_before: '20260101000000Z'
 tls_ca_certs:
+  - common_name: LOCAL CONSUL ROOT CA
+    cert_path: '{{ consul_ca_cert_path }}'
+    key_path: '{{ consul_ca_key_path }}'
   - common_name: LOCAL MARIADB ROOT CA
     cert_path: '{{ mariadb_ca_cert_path }}'
     key_path: '{{ mariadb_ca_key_path }}'
