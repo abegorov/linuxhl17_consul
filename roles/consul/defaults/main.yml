@@ -14,7 +14,32 @@ consul_env_file: consul.env
 consul_user: consul
 consul_group: consul
 
-consul_config: ''
+consul_secret_key: '{{ lookup("ansible.builtin.password",
+  "secrets/consul_secret_key.txt", length=32) |
+  ansible.builtin.b64encode }}'
+
+consul_config: |
+  node_name = "{{ inventory_hostname }}"
+  server = true
+  ui_config {
+    enabled = true
+  }
+  data_dir = "{{ consul_data_dir }}"
+  addresses {
+    http = "0.0.0.0"
+  }
+  encrypt = "{{ consul_secret_key }}"
+
+  tls {
+    defaults {
+      verify_incoming = true
+      verify_outgoing = true
+      ca_file = "{{ consul_cert.ca_path }}"
+      cert_file = "{{ consul_cert.cert_path }}"
+      key_file = "{{ consul_cert.key_path }}"
+      verify_server_hostname = true
+    }
+  }
 consul_env: ''
 
 consul_certs_dir: secrets/certs/consul
@@ -22,11 +47,12 @@ consul_ca_cert_path: '{{ consul_certs_dir }}/ca.crt'
 consul_ca_key_path: '{{ consul_certs_dir }}/ca.key'
 consul_cert_path: '{{ consul_certs_dir }}/{{ inventory_hostname }}.crt'
 consul_key_path: '{{ consul_certs_dir }}/{{ inventory_hostname }}.key'
-consul_certs:
-  - ca_path: '{{ consul_config_dir }}/ca.crt'
-    cert_path: '{{ consul_config_dir }}/consul.crt'
-    key_path: '{{ consul_config_dir }}/consul.key'
-    ca_content: '{{ lookup("ansible.builtin.file", consul_ca_cert_path) }}'
-    cert_content: '{{ lookup("ansible.builtin.file", consul_cert_path) }}'
-    key_content: '{{ lookup("ansible.builtin.file", consul_key_path) }}'
+consul_cert:
+  ca_path: '{{ consul_config_dir }}/ca.crt'
+  cert_path: '{{ consul_config_dir }}/consul.crt'
+  key_path: '{{ consul_config_dir }}/consul.key'
+  ca_content: '{{ lookup("ansible.builtin.file", consul_ca_cert_path) }}'
+  cert_content: '{{ lookup("ansible.builtin.file", consul_cert_path) }}'
+  key_content: '{{ lookup("ansible.builtin.file", consul_key_path) }}'
+consul_certs: ['{{ consul_cert }}']
 ...
