@@ -39,6 +39,7 @@
 - **linux_modules** - устанавливает модули ядра (в **Yandex Cloud** стоит **linux-virtual**, который не содержит модулей ядра для работы с **GFS2**).
 - **iscsi** - настраивает **iSCSI Initiator**.
 - **mpath** - настраивает **multipathd**, в частности прописывает **reservation_key** в `/etc/multipath.conf` для последующего использования в агенте **fence_mpath** для настройки **fencing**'а.
+- **consul** - устанавливает и настраивает **consul**.
 - **corosync** - настраивает кластер **corosync** в несколько колец.
 - **dlm** - устанавливает распределённый менеджер блокировок **dlm**.
 - **mdadm** - устанавилвает **mdadm** и создаёт **RAID1** массив `/dev/md/cluster-md` (используется технология [MD Cluster](https://docs.kernel.org/driver-api/md/md-cluster.html)).
