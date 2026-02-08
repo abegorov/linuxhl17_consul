@@ -167,6 +167,39 @@ resource "yandex_compute_instance" "lb" {
   }
   metadata = local.yandex_compute_instance_metadata
 }
+resource "yandex_lb_target_group" "lb" {
+  name      = "${var.project}-lb"
+  dynamic "target" {
+    for_each = yandex_compute_instance.lb
+    content {
+      subnet_id = yandex_vpc_subnet.default.id
+      address = target.value.network_interface.0.ip_address
+    }
+  }
+}
+resource "yandex_lb_network_load_balancer" "lb" {
+  name = "${var.project}-lb"
+  listener {
+    name = "${var.project}-lb-https"
+    port = 443
+    external_address_spec {
+      ip_version = "ipv4"
+    }
+  }
+  attached_target_group {
+    target_group_id = yandex_lb_target_group.lb.id
+    healthcheck {
+      name = "https"
+      healthy_threshold = 2
+      unhealthy_threshold = 2
+      interval = 2
+      timeout = 1
+      tcp_options {
+        port = 443
+      }
+    }
+  }
+}
 resource "local_file" "inventory" {
   filename = "${path.root}/inventory.yml"
   content = templatefile("${path.module}/inventory.tftpl", {
