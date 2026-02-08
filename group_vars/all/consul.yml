@@ -1,0 +1,8 @@
+---
+consul_dc: dc1
+consul_server_ips: '{{ groups["backend"] |
+  map("ansible.builtin.extract", hostvars, "ip_address") }}'
+consul_secret_key: '{{ lookup("ansible.builtin.password",
+  "secrets/consul_secret_key.txt", length=32) |
+  ansible.builtin.b64encode }}'
+...
