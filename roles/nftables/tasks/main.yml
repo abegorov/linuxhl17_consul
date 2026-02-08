@@ -1,0 +1,37 @@
+---
+- name: Install nftables
+  ansible.builtin.apt:
+    name: nftables
+    update_cache: true
+    cache_valid_time: 3600
+    state: present
+  retries: 10
+  delay: 10
+  tags: nftables
+
+- name: Configure nftables
+  ansible.builtin.template:
+    src: nftables.conf
+    dest: /etc/nftables.conf
+    owner: root
+    group: root
+    mode: '0755'
+  notify: Reload nftables service
+  tags: nftables
+
+- name: Enable and start nftables service
+  ansible.builtin.systemd_service:
+    name: nftables.service
+    enabled: true
+    state: started
+  when: nftables_config | length > 0
+  tags: nftables
+
+- name: Disable and stop nftables service
+  ansible.builtin.systemd_service:
+    name: nftables.service
+    enabled: false
+    state: stopped
+  when: nftables_config | length == 0
+  tags: nftables
+...
