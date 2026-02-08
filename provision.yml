@@ -45,6 +45,13 @@
     - consul
     - angie
 
+- name: DNS redirect
+  hosts: lb
+  become: true
+  gather_facts: false
+  roles:
+    - nftables
+
 - name: Backend provision
   tags: backend
   hosts: backend

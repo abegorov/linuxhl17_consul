@@ -1,0 +1,10 @@
+---
+nftables_config: |
+  table inet nat {
+    chain prerouting {
+      type nat hook prerouting priority dstnat; policy accept;
+      ip daddr {{ ip_address }} udp dport 53 counter redirect to :8600
+      ip daddr {{ ip_address }} tcp dport 53 counter redirect to :8600
+    }
+  }
+...
