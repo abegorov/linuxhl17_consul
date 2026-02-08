@@ -50,6 +50,7 @@
     owner: root
     group: '{{ consul_group }}'
     mode: '0640'
+    validate: consul validate %s
   notify: Reload consul service
 
 - name: Update consul service
