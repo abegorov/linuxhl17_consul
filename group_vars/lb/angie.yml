@@ -4,9 +4,10 @@ angie_backend_ips: '{{ groups["backend"] | map("ansible.builtin.extract",
 angie_httpd_conf_frontend:
   frontend: |
     upstream backend {
-    {% for ip in angie_backend_ips %}
-      server {{ ip }}:443;
-    {% endfor %}
+      zone upstream_backend 256k;
+      resolver 127.0.0.1:8600;
+      resolver_timeout 100ms;
+      server glpi-backend.service.consul:443 resolve;
       keepalive 16;
     }
 
